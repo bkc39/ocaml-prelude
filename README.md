@@ -12,8 +12,12 @@ in the `Data` library.
 
 ## Building the Library
 
-To build `data` do:
+To build `Data` do:
 ```bash
 $ ocamlbuild -r data.cmo
+```
+and for `Control`
+```bash
+$ ocamlbuild -r control.cmo
 ```
 
