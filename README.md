@@ -20,4 +20,3 @@ and for `Control`
 ```bash
 $ ocamlbuild -r control.cmo
 ```
-
