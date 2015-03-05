@@ -65,3 +65,13 @@ module WriterT (Mon : MONOID_DEF) =
         end
       let lift m = M.bind m (fun x -> M.return (Mon.mid, x))
     end
+
+module StateT (T : sig type t end) =
+  functor (M : MONAD_DEF_) -> struct
+      module Def = struct
+          type 'a t = T.t -> ('a * T.t) M.t
+          let return x s = M.return (x, s)
+          let bind m f s = M.bind (m s) (uncurry f)
+        end
+      let lift m s = M.bind m (fun x -> M.return (x, s))
+    end
