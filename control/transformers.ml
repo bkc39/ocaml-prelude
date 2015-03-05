@@ -63,6 +63,7 @@ module WriterT (Mon : MONOID_DEF) =
             M.bind m (fun (x, a) ->
                       M.bind (f a) (fun (y, b) -> M.return (Mon.mop x y, b)))
         end
+      include MakeMonad_ (Def)
       let lift m = M.bind m (fun x -> M.return (Mon.mid, x))
     end
 
@@ -73,6 +74,7 @@ module StateT (T : sig type t end) =
           let return x s = M.return (x, s)
           let bind m f s = M.bind (m s) (uncurry f)
         end
+      include MakeMonad_ (Def)
       let lift m s = M.bind m (fun x -> M.return (x, s))
     end
 
