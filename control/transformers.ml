@@ -75,3 +75,14 @@ module StateT (T : sig type t end) =
         end
       let lift m s = M.bind m (fun x -> M.return (x, s))
     end
+
+module ContT (T : sig type t end) =
+  functor (M : MONAD_DEF_) -> struct
+      module Def = struct
+          type 'a t = ('a -> T.t M.t) -> (T.t M.t)
+          let return x k = k x
+          let bind m f k = m (fun v -> f v k)
+        end
+      include MakeMonad_ (Def)
+      let lift = bind
+    end
