@@ -1,5 +1,6 @@
 open Data.Either
 open Data.Function
+open Data.Monoid
 
 open Pointed
 open Monad
@@ -51,4 +52,16 @@ module ReaderT (T : sig type t end) =
 
       include MakeMonad_ (Def)
       let lift = const
+    end
+
+module WriterT (Mon : MONOID_DEF) =
+  functor (M : MONAD_DEF_) -> struct
+      module Def = struct
+          type 'a t = (Mon.t * 'a) M.t
+          let return x = M.return (Mon.mid, x)
+          let bind m f =
+            M.bind m (fun (x, a) ->
+                      M.bind (f a) (fun (y, b) -> M.return (Mon.mop x y, b)))
+        end
+      let lift m = M.bind m (fun x -> M.return (Mon.mid, x))
     end
