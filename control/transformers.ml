@@ -1,4 +1,5 @@
 open Data.Either
+open Data.Function
 
 open Pointed
 open Monad
@@ -38,4 +39,16 @@ module ErrorT (T : sig type t end) =
 
       include MakeMonad_ (Def)
       let lift x = M.bind x return
+    end
+
+module ReaderT (T : sig type t end) =
+  functor (M : MONAD_DEF_) -> struct
+      module Def = struct
+          type 'a t = T.t -> 'a M.t
+          let return x t = M.return x
+          let bind m f t = M.bind (m t) (fun x -> f x t)
+        end
+
+      include MakeMonad_ (Def)
+      let lift = const
     end
