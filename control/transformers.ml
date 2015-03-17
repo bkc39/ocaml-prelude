@@ -11,7 +11,7 @@ module type MONAD_TRANSFORMER =
     val lift : 'a M.t -> 'a t
   end
 
-module OptionT =
+module OptionT : MONAD_TRANSFORMER =
   functor (M : MONAD_DEFAULT) -> struct
       module Def = struct
           type 'a t = 'a option M.t
@@ -22,6 +22,7 @@ module OptionT =
                                     | Some x -> f x
                                     | None   -> M.return None)
         end
+      type 'a t = 'a Def.t
       include MakeMonadDefault (Def)
       let lift x = M.bind x return
 
@@ -44,6 +45,7 @@ module ErrorT (T : sig type t end) =
                                     | Right v     -> f v)
         end
 
+      type 'a t = 'a Def.t
       include MakeMonadDefault (Def)
       let lift x = M.bind x return
 
@@ -54,7 +56,7 @@ module ErrorT (T : sig type t end) =
                                   | Right _ as e -> return e
     end
 
-module ReaderT (T : sig type t end) =
+module ReaderT (T : sig type t end) : MONAD_TRANSFORMER =
   functor (M : MONAD_DEFAULT) -> struct
       module Def = struct
           type 'a t = T.t -> 'a M.t
@@ -62,6 +64,7 @@ module ReaderT (T : sig type t end) =
           let bind m f t = M.bind (m t) (fun x -> f x t)
         end
 
+      type 'a t = 'a Def.t
       include MakeMonadDefault (Def)
       let lift = const
 
@@ -72,7 +75,7 @@ module ReaderT (T : sig type t end) =
       let asks f            = f <$> ask
     end
 
-module WriterT (Mon : MONOID_DEF) =
+module WriterT (Mon : MONOID_DEF) : MONAD_TRANSFORMER =
   functor (M : MONAD_DEFAULT) -> struct
       module Def = struct
           type 'a t = (Mon.t * 'a) M.t
@@ -81,6 +84,7 @@ module WriterT (Mon : MONOID_DEF) =
             M.bind m (fun (x, a) ->
                       M.bind (f a) (fun (y, b) -> M.return (Mon.mop x y, b)))
         end
+      type 'a t = 'a Def.t
       include MakeMonadDefault (Def)
       let lift m = M.bind m (fun x -> M.return (Mon.mid, x))
 
@@ -93,13 +97,14 @@ module WriterT (Mon : MONOID_DEF) =
       let censor f m    = (fun (a, w) -> (a, f w))     <$> m
     end
 
-module StateT (T : sig type t end) =
+module StateT (T : sig type t end) : MONAD_TRANSFORMER =
   functor (M : MONAD_DEFAULT) -> struct
       module Def = struct
           type 'a t = T.t -> ('a * T.t) M.t
           let return x s = M.return (x, s)
           let bind m f s = M.bind (m s) (uncurry f)
         end
+      type 'a t = 'a Def.t
       include MakeMonadDefault (Def)
       let lift m s = M.bind m (fun x -> M.return (x, s))
 
@@ -114,15 +119,16 @@ module StateT (T : sig type t end) =
       let with_state f m = modify f *> m
     end
 
-module ContT (T : sig type t end) =
+module ContT (T : sig type t end) : MONAD_TRANSFORMER =
   functor (M : MONAD_DEFAULT) -> struct
       module Def = struct
           type 'a t = ('a -> T.t M.t) -> (T.t M.t)
           let return x k = k x
           let bind m f k = m (fun v -> f v k)
         end
+      type 'a t = 'a Def.t
       include MakeMonadDefault (Def)
-      let lift = bind
+      let lift = M.bind
 
       let eval_cont m  = m M.return
       let map_cont f m k = f (m k)
