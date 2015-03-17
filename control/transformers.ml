@@ -102,6 +102,16 @@ module StateT (T : sig type t end) =
         end
       include MakeMonadDefault (Def)
       let lift m s = M.bind m (fun x -> M.return (x, s))
+
+      open FunctorInfix
+      open ApplicativeInfix
+      let eval_state m s = fst <$> m s
+      let exec_state m s = snd <$> m s
+      let get t          = M.return (t,t)
+      let put s          = M.return ((), s)
+      let modify f t     = M.return ((), f t)
+      let gets f         = f <$> get
+      let with_state f m = modify f *> m
     end
 
 module ContT (T : sig type t end) =
