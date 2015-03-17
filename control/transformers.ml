@@ -83,6 +83,14 @@ module WriterT (Mon : MONOID_DEF) =
         end
       include MakeMonadDefault (Def)
       let lift m = M.bind m (fun x -> M.return (Mon.mid, x))
+
+      open FunctorInfix
+      let exec_writer m = snd <$> m
+      let tell w        = M.return (w, ())
+      let listen m      = (fun (a,w) -> ((a,w), w))    <$> m
+      let listens f m   = (fun (a,w) -> ((a, f w), w)) <$> m
+      let pass m        = (fun ((a,f), w) -> (a, f w)) <$> m
+      let censor f m    = (fun (a, w) -> (a, f w))     <$> m
     end
 
 module StateT (T : sig type t end) =
