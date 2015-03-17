@@ -123,4 +123,15 @@ module ContT (T : sig type t end) =
         end
       include MakeMonadDefault (Def)
       let lift = bind
+
+      let eval_cont m  = m M.return
+      let map_cont f m k = f (m k)
+      let with_cont f m k = m (f k)
+      let call_cc f k = f (fun x _ -> k x) k
+      let reset m = lift (eval_cont m)
+      let shift f m = eval_cont (f m)
+
+      open MonadInfix
+      let lift_local ask local f m k =
+        ask >>= fun v -> local f (m (fun x -> local (const v) (k x)))
     end
