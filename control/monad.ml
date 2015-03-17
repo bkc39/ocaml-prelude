@@ -96,3 +96,9 @@ module type MONAD_JOIN_DEFAULT = sig
 
 module MakeMonadJoinDefault (M : MONAD_JOIN_DEFAULT)
        : (S with type 'a t := 'a M.t) = MakeMonadJoin (M) (M) (M)
+
+module IdentityMonad : MONAD_DEFAULT = struct
+    type 'a t = 'a
+    let return = id
+    let bind m f = f m
+  end
