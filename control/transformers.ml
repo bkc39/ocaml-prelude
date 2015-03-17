@@ -24,6 +24,12 @@ module OptionT =
         end
       include MakeMonadDefault (Def)
       let lift x = M.bind x return
+
+      open FunctorInfix
+      let maybe x f m     = (function None -> x | Some v -> f v)      <$> m
+      let is_some m       = (function None -> false | Some _ -> true) <$> m
+      let is_none m       = (function None -> true | Some _ -> false) <$> m
+      let from_option x m = maybe x (fun x -> x) m
     end
 
 module ErrorT (T : sig type t end) =
