@@ -46,6 +46,12 @@ module ErrorT (T : sig type t end) =
 
       include MakeMonadDefault (Def)
       let lift x = M.bind x return
+
+      open MonadInfix
+      let throw_e e = return (Left e)
+      let catch_e m handler = m >>= function
+                              | Left e       -> handler e
+                              | Right _ as e -> return e
     end
 
 module ReaderT (T : sig type t end) =
