@@ -48,10 +48,10 @@ module ErrorT (T : sig type t end) =
       let lift x = M.bind x return
 
       open MonadInfix
-      let throw_e e = return (Left e)
-      let catch_e m handler = m >>= function
-                              | Left e       -> handler e
-                              | Right _ as e -> return e
+      let throw_error e = return (Left e)
+      let catch_error m handler = m >>= function
+                                  | Left e       -> handler e
+                                  | Right _ as e -> return e
     end
 
 module ReaderT (T : sig type t end) =
@@ -64,6 +64,12 @@ module ReaderT (T : sig type t end) =
 
       include MakeMonadDefault (Def)
       let lift = const
+
+      open FunctorInfix
+      let with_reader f m t = m (f t)
+      let ask t             = M.return t
+      let local f m         = with_reader f m
+      let asks f            = f <$> ask
     end
 
 module WriterT (Mon : MONOID_DEF) =
