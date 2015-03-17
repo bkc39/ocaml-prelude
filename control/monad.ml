@@ -79,18 +79,20 @@ module MakeMonadJoin
     include MakeMonad (P) (Bind)
   end
 
-module type MONAD_DEF_ = sig
+module type MONAD_DEFAULT = sig
     include POINTED_DEF
     include MONAD_DEF with type 'a t := 'a t
   end
 
 
-module MakeMonad_ (M : MONAD_DEF_)
+module MakeMonadDefault (M : MONAD_DEFAULT)
        : (S with type 'a t := 'a M.t) = MakeMonad (M) (M)
 
-module MakeMonadJoin_
-         (M : sig include FUNCTOR_DEF
-                  include POINTED_DEF    with type 'a t := 'a t
-                  include MONAD_DEF_JOIN with type 'a t := 'a t
-              end)
+module type MONAD_JOIN_DEFAULT = sig
+    include FUNCTOR_DEF
+    include POINTED_DEF    with type 'a t := 'a t
+    include MONAD_DEF_JOIN with type 'a t := 'a t
+  end
+
+module MakeMonadJoinDefault (M : MONAD_JOIN_DEFAULT)
        : (S with type 'a t := 'a M.t) = MakeMonadJoin (M) (M) (M)
