@@ -1,13 +1,13 @@
 .PHONY: all
-all: data control
+all: control data
 
 .PHONY: control
 control:
-	ocamlbuild -r control.cmo
+	ocamlbuild -r control.cma
 
 .PHONY: data
 data:
-	ocamlbuild -r data.cmo
+	ocamlbuild -r data.cma
 
 .PHONY: clean
 clean: force
